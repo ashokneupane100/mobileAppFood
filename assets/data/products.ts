@@ -8,7 +8,7 @@ const products = [
   {
     id: 2,
     name: 'ExtravaganZZa',
-    image: 'https://notjustdev-dummy.s3.us-east-2.amazonaws.com/food/extravaganzza.png',
+     image: 'https://notjustdev-dummy.s3.us-east-2.amazonaws.com/food/extravaganzza.png',
     price: Math.round(14.99 * 133), // 1994 NPR
   },
   {
