@@ -17,12 +17,12 @@ const products = [
     image: 'https://notjustdev-dummy.s3.us-east-2.amazonaws.com/food/peperoni.png',
     price: Math.round(13.47 * 133), // 1792 NPR
   },
-  {
-    id: 4,
-    name: 'Margarita',
-    image: 'https://notjustdev-dummy.s3.us-east-2.amazonaws.com/food/margarita.png',
-    price: Math.round(9.9 * 133), // 1317 NPR
-  },
+  // {
+  //   id: 4,
+  //   name: 'Margarita',
+  //   image: 'https://notjustdev-dummy.s3.us-east-2.amazonaws.com/food/margarita.png',
+  //   price: Math.round(9.9 * 133), // 1317 NPR
+  // },
   {
     id: 5,
     name: 'Pacific Veggie',
