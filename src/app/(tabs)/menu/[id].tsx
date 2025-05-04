@@ -1,15 +1,21 @@
-import { StyleSheet, Text, View, Image } from "react-native";
-import React from "react";
+import { StyleSheet, Text, View, Image, Pressable } from "react-native";
+import React, { useState } from "react";
 import { Stack, useLocalSearchParams } from "expo-router";
 import products from "@assets/data/products";
 import { defaultPizzaImage } from "@components/ProductListItem";
+import Button from "@components/Button";
 
 const sizes = ['S', 'M', 'L', 'XL'];
 
 const ProductDetailsScreen = () => {
   const { id } = useLocalSearchParams();
+  const [selectedSize, setSelectedSize] = useState("M");
 
   const product = products.find((p) => p.id.toString() === id);
+
+  const addToCart = () => {
+    console.warn("Adding to Cart, size:", selectedSize);
+  };
 
   if (!product) {
     return <Text>Product Not Found</Text>;
@@ -27,13 +33,28 @@ const ProductDetailsScreen = () => {
 
       <View style={styles.sizes}>
         {sizes.map(size => 
-          <View key={size} style={styles.size}>
-            <Text style={styles.sizeText}>{size}</Text>
-          </View>
+          <Pressable
+            onPress={() => setSelectedSize(size)}
+            key={size}
+            style={[
+              styles.size,
+              { backgroundColor: selectedSize === size ? '#d3d3d3' : '#e0e0e0' },
+            ]}
+          >
+            <Text
+              style={[
+                styles.sizeText,
+                { color: selectedSize === size ? '#000' : '#555' },
+              ]}
+            >
+              {size}
+            </Text>
+          </Pressable>
         )}
       </View>
 
       <Text style={styles.price}>Rs {product.price}</Text>
+      <Button onPress={addToCart} text="Add to Cart" />
     </View>
   );
 };
@@ -53,6 +74,8 @@ const styles = StyleSheet.create({
   price: {
     fontSize: 18,
     fontWeight: "bold",
+    marginTop: 'auto',
+    marginBottom: 10,
   },
   label: {
     fontSize: 16,
