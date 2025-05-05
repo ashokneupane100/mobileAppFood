@@ -1,7 +1,11 @@
-import { StyleSheet, Text, View, TextInput, ActivityIndicator } from "react-native";
+import { StyleSheet, Text, View, TextInput, ActivityIndicator, Image, Alert } from "react-native";
 import React, { useState } from "react";
-import Button from "@components/Button";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import * as ImagePicker from "expo-image-picker";
+import { Stack } from "expo-router";
+import Button from "@components/Button";
+import { defaultPizzaImage } from "@components/ProductListItem";
+import Colors from "@/constants/Colors";
 
 const CreateProductScreen = () => {
   const [formData, setFormData] = useState({
@@ -13,19 +17,23 @@ const CreateProductScreen = () => {
     name: "",
     price: "",
     description: "",
+    image: "",
+    general: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [image, setImage] = useState<string | null>(null);
 
   const resetFields = () => {
     setFormData({ name: "", price: "", description: "" });
-    setErrors({ name: "", price: "", description: "" });
+    setErrors({ name: "", price: "", description: "", image: "", general: "" });
     setSuccessMessage("");
+    setImage(null);
   };
 
   const validateInput = () => {
     let isValid = true;
-    const newErrors = { name: "", price: "", description: "" };
+    const newErrors = { name: "", price: "", description: "", image: "", general: "" };
 
     if (!formData.name.trim()) {
       newErrors.name = "Product name is required";
@@ -48,14 +56,39 @@ const CreateProductScreen = () => {
       isValid = false;
     }
 
+    if (!image) {
+      newErrors.image = "Product image is required";
+      isValid = false;
+    }
+
     setErrors(newErrors);
     return isValid;
   };
 
-  const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    setErrors(prev => ({ ...prev, [field]: "" }));
+  const handleInputChange = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    setErrors((prev) => ({ ...prev, [field]: "", general: "" }));
     setSuccessMessage("");
+  };
+
+  const pickImage = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permissionResult.granted) {
+      Alert.alert("Permission Denied", "Please allow access to photos to select an image.");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1.91, 1],
+      quality: 0.8, // Slightly reduced quality to optimize size
+    });
+
+    if (!result.canceled && result.assets?.[0]?.uri) {
+      setImage(result.assets[0].uri);
+      setErrors((prev) => ({ ...prev, image: "", general: "" }));
+    }
   };
 
   const onCreate = async () => {
@@ -63,22 +96,38 @@ const CreateProductScreen = () => {
 
     setIsLoading(true);
     try {
-      // Simulated API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      console.log("Creating product:", formData);
+      // Simulated API call (replace with actual API integration)
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      console.log("Creating product:", { ...formData, image });
       setSuccessMessage("Product created successfully!");
       resetFields();
     } catch (error) {
-      setErrors(prev => ({ ...prev, general: "Failed to create product" }));
+      setErrors((prev) => ({ ...prev, general: "Failed to create product" }));
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <KeyboardAwareScrollView style={styles.container}>
+    <KeyboardAwareScrollView
+      style={styles.container}
+      contentContainerStyle={styles.scrollContent}
+      keyboardShouldPersistTaps="handled"
+    >
       <View style={styles.formContainer}>
+        <Stack.Screen options={{ title: "Create Product" }} />
+
+        <Image
+          source={{ uri: image || defaultPizzaImage }}
+          style={styles.image}
+          resizeMode="cover"
+        />
+        <Text onPress={pickImage} style={styles.textButton}>
+          Select Image
+        </Text>
+        {errors.image && <Text style={styles.errorText}>{errors.image}</Text>}
+
         <Text style={styles.title}>Create New Product</Text>
 
         {/* Name Input */}
@@ -86,7 +135,7 @@ const CreateProductScreen = () => {
           <Text style={styles.label}>Product Name</Text>
           <TextInput
             value={formData.name}
-            onChangeText={text => handleInputChange("name", text)}
+            onChangeText={(text) => handleInputChange("name", text)}
             placeholder="Enter product name"
             style={[styles.input, errors.name && styles.inputError]}
             autoCapitalize="words"
@@ -100,7 +149,7 @@ const CreateProductScreen = () => {
           <Text style={styles.label}>Price (Rs)</Text>
           <TextInput
             value={formData.price}
-            onChangeText={text => handleInputChange("price", text.replace(/[^0-9.]/g, ""))}
+            onChangeText={(text) => handleInputChange("price", text.replace(/[^0-9.]/g, ""))}
             placeholder="999.99"
             style={[styles.input, errors.price && styles.inputError]}
             keyboardType="decimal-pad"
@@ -114,7 +163,7 @@ const CreateProductScreen = () => {
           <Text style={styles.label}>Description (Optional)</Text>
           <TextInput
             value={formData.description}
-            onChangeText={text => handleInputChange("description", text)}
+            onChangeText={(text) => handleInputChange("description", text)}
             placeholder="Enter product description"
             style={[styles.input, styles.textArea, errors.description && styles.inputError]}
             multiline
@@ -133,7 +182,7 @@ const CreateProductScreen = () => {
           onPress={onCreate}
           text={isLoading ? "Creating..." : "Create Product"}
           disabled={isLoading}
-          style={styles.submitButton}
+          style={[styles.submitButton, isLoading && styles.disabledButton]}
         />
 
         {/* Reset Button */}
@@ -155,6 +204,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
   formContainer: {
     padding: 20,
@@ -208,6 +260,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 12,
   },
+  disabledButton: {
+    backgroundColor: "#99c2ff",
+    opacity: 0.7,
+  },
   resetButton: {
     backgroundColor: "transparent",
     borderWidth: 1,
@@ -217,5 +273,19 @@ const styles = StyleSheet.create({
   },
   resetButtonText: {
     color: "#666",
+  },
+  image: {
+    width: "50%",
+    aspectRatio: 1.91,
+    alignSelf: "center",
+    borderRadius: 8,
+    marginVertical: 10,
+  },
+  textButton: {
+    textAlign: "center",
+    marginVertical: 10,
+    color: Colors.light.tint,
+    fontWeight: "bold",
+    fontSize: 16,
   },
 });
