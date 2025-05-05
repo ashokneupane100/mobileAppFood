@@ -1,3 +1,4 @@
+// src/app/_layout.tsx
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
@@ -14,9 +15,9 @@ export {
   ErrorBoundary,
 } from 'expo-router';
 
+// Remove the unstable_settings to start fresh
 export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: '(tabs)',
+  initialRouteName: 'index', // Make sure we start with index
 };
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -52,11 +53,12 @@ function RootLayoutNav() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <CartProvider>
-      <Stack>
-      <Stack.Screen name="(admin)" options={{ headerShown: false }} />
-        <Stack.Screen name="(user)" options={{ headerShown: false }} />
-        <Stack.Screen name="cart" options={{ presentation: 'modal' }} />
-      </Stack>
+        <Stack>
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="(admin)" options={{ headerShown: false }} />
+          <Stack.Screen name="(user)" options={{ headerShown: false }} />
+          <Stack.Screen name="cart" options={{ presentation: 'modal' }} />
+        </Stack>
       </CartProvider>
     </ThemeProvider>
   );
